@@ -546,6 +546,9 @@ public class ValueSetsTransformerImpl implements IValueSetsTransformer, Serializ
 		case "2.16.840.1.113883.6.256":
 			system = "http://www.radlex.org";
 			break;
+        case "2.16.840.1.113883.6.90":
+            system = "http://hl7.org/fhir/sid/icd-10";
+            break;
 		case "2.16.840.1.113883.6.3":
 			system = "http://hl7.org/fhir/sid/icd-10";
 			break;
