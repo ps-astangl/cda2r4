@@ -259,6 +259,9 @@ public class ResourceTransformerImpl implements IResourceTransformer, Serializab
 
   @Override
   public Reference getReference(Resource resource) {
+    if (resource == null) {
+      return null;
+    }
     Reference reference = new Reference(resource.getId());
     String referenceString = ReferenceInfo.getDisplay(resource);
     if (referenceString != null) {
@@ -2795,7 +2798,14 @@ public class ResourceTransformerImpl implements IResourceTransformer, Serializab
           } else if (value instanceof RTO) {
             fhirObs.setValue(dtt.tRTO2Ratio((RTO) value));
           } else if (value instanceof ED) {
-            fhirObs.setValue(dtt.tED2Attachment((ED) value));
+            // turn the CDA ED into a DocumentReference with one attachment
+            DocumentReference doc = dtt.tED2DocumentReference((ED) value);
+
+            // park it in the bundle the same way the rest of the transformer does
+            result.addResource(doc);
+
+            // link the observation to the blob
+            fhirObs.addDerivedFrom().setReference(doc.getIdElement().getValue());
           } else if (value instanceof TS) {
             fhirObs.setValue(dtt.tTS2DateTime((TS) value));
           } else if (value instanceof BL) {

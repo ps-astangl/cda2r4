@@ -41,6 +41,9 @@ import org.hl7.fhir.r4.model.ContactPoint.ContactPointSystem;
 import org.hl7.fhir.r4.model.DateTimeType;
 import org.hl7.fhir.r4.model.DateType;
 import org.hl7.fhir.r4.model.DecimalType;
+import org.hl7.fhir.r4.model.DocumentReference;
+import org.hl7.fhir.r4.model.DocumentReference.DocumentReferenceContentComponent;
+import org.hl7.fhir.r4.model.Enumerations.DocumentReferenceStatus;
 import org.hl7.fhir.r4.model.HumanName;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Identifier.IdentifierUse;
@@ -490,6 +493,40 @@ public class DataTypesTransformerImpl implements IDataTypesTransformer, Serializ
 		}
 
 		return attachmentDt;
+	}
+
+	@Override
+	public DocumentReference tED2DocumentReference(ED ed) {
+		if (ed == null || ed.isSetNullFlavor())
+			return null;
+
+		DocumentReference docRef = new DocumentReference();
+		
+		// Set a unique ID for the document reference
+		docRef.setId("doc-" + System.currentTimeMillis() + "-" + (int)(Math.random() * 1000));
+		
+		// Set status to current
+		docRef.setStatus(DocumentReferenceStatus.CURRENT);
+		
+		// Create content component with attachment
+		DocumentReferenceContentComponent content = new DocumentReferenceContentComponent();
+		Attachment attachment = tED2Attachment(ed);
+		if (attachment != null) {
+			content.setAttachment(attachment);
+			docRef.addContent(content);
+		}
+		
+		// Set document type if available
+		if (ed.getMediaType() != null && !ed.getMediaType().isEmpty()) {
+			CodeableConcept docType = new CodeableConcept();
+			Coding coding = new Coding();
+			coding.setCode(ed.getMediaType());
+			coding.setSystem("http://hl7.org/fhir/ValueSet/document-classcodes");
+			docType.addCoding(coding);
+			docRef.setType(docType);
+		}
+		
+		return docRef;
 	}
 
 	@Override

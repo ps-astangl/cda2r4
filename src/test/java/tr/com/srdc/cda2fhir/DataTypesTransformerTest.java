@@ -33,6 +33,8 @@ import org.hl7.fhir.r4.model.ContactPoint;
 import org.hl7.fhir.r4.model.DateTimeType;
 import org.hl7.fhir.r4.model.DateType;
 import org.hl7.fhir.r4.model.DecimalType;
+import org.hl7.fhir.r4.model.DocumentReference;
+import org.hl7.fhir.r4.model.Enumerations.DocumentReferenceStatus;
 import org.hl7.fhir.r4.model.HumanName;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.InstantType;
@@ -342,6 +344,50 @@ public class DataTypesTransformerTest {
 		ed3.setNullFlavor(NullFlavor.NI);
 		Attachment attachment3 = dtt.tED2Attachment(ed3);
 		Assert.assertNull("ED.nullFlavor set instance transform failed", attachment3);
+	}
+
+	@Test
+	public void testED2DocumentReference() {
+		// simple instance test
+		ED ed = DatatypesFactory.eINSTANCE.createED();
+		ed.setMediaType("text/plain");
+		ed.setLanguage("en");
+		ed.addText("test data");
+		TEL theTel = DatatypesFactory.eINSTANCE.createTEL();
+		theTel.setValue("http://example.com/test");
+		ed.setReference(theTel);
+		ed.setIntegrityCheck("testHash".getBytes());
+
+		DocumentReference docRef = dtt.tED2DocumentReference(ed);
+		Assert.assertNotNull("DocumentReference should not be null", docRef);
+		Assert.assertNotNull("DocumentReference ID should not be null", docRef.getId());
+				Assert.assertEquals("DocumentReference status should be CURRENT",
+			DocumentReferenceStatus.CURRENT, docRef.getStatus());
+		Assert.assertEquals("DocumentReference should have one content component", 1, docRef.getContent().size());
+		
+		// Check the attachment in the content
+		Attachment attachment = docRef.getContent().get(0).getAttachment();
+		Assert.assertEquals("Attachment content type should match ED media type", "text/plain", attachment.getContentType());
+		Assert.assertEquals("Attachment language should match ED language", "en", attachment.getLanguage());
+		Assert.assertArrayEquals("Attachment data should match ED text", "test data".getBytes(), attachment.getData());
+		Assert.assertEquals("Attachment URL should match ED reference", "http://example.com/test", attachment.getUrl());
+		Assert.assertArrayEquals("Attachment hash should match ED integrity check", "testHash".getBytes(), attachment.getHash());
+		
+		// Check document type
+		Assert.assertNotNull("Document type should not be null", docRef.getType());
+		Assert.assertEquals("Document type should have one coding", 1, docRef.getType().getCoding().size());
+		Assert.assertEquals("Document type code should match media type", "text/plain", docRef.getType().getCoding().get(0).getCode());
+
+		// null instance test
+		ED ed2 = null;
+		DocumentReference docRef2 = dtt.tED2DocumentReference(ed2);
+		Assert.assertNull("ED null instance transform failed", docRef2);
+
+		// nullFlavor instance test
+		ED ed3 = DatatypesFactory.eINSTANCE.createED();
+		ed3.setNullFlavor(NullFlavor.NI);
+		DocumentReference docRef3 = dtt.tED2DocumentReference(ed3);
+		Assert.assertNull("ED.nullFlavor set instance transform failed", docRef3);
 	}
 
 	@Test

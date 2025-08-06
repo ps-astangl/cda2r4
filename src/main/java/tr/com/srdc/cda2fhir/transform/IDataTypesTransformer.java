@@ -25,6 +25,7 @@ import java.util.Map;
 import org.hl7.fhir.r4.model.Address;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Base64BinaryType;
+import org.hl7.fhir.r4.model.DocumentReference;
 import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
@@ -173,6 +174,16 @@ public interface IDataTypesTransformer {
 	 * @return An Attachment composite datatype instance
 	 */
 	Attachment tED2Attachment(ED ed);
+
+	/**
+	 * Transforms a CDA ED instance to a FHIR DocumentReference resource.
+	 * This is used when ED content needs to be stored as a separate resource
+	 * rather than as an Attachment in Observation.value[x].
+	 *
+	 * @param ed A CDA ED instance
+	 * @return A DocumentReference resource instance
+	 */
+	DocumentReference tED2DocumentReference(ED ed);
 
 	/**
 	 * Transforms a CDA EN instance to a FHIR HumanName composite datatype instance.
